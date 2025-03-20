@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Invitation Creator</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background: linear-gradient(to bottom right, #1e3a5f, #20639b);
+        color: #333;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+      }
+
+      .container {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        width: 90%;
+        max-width: 600px;
+        padding: 25px;
+      }
+
+      h1 {
+        color: #0b3d91;
+        text-align: center;
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        font-weight: bold;
+        color: #444;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #20639b;
+        border-radius: 5px;
+        background: #f3f4f6;
+        font-size: 16px;
+      }
+
+      input:focus,
+      textarea:focus {
+        border: 2px solid #e74c3c;
+        box-shadow: 0 0 5px rgba(231, 76, 60, 0.3);
+        outline: none;
+      }
+
+      textarea {
+        min-height: 100px;
+      }
+
+      button {
+        background: #ff6600;
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 16px;
+        width: 100%;
+        font-weight: bold;
+        transition: 0.3s;
+      }
+
+      button:hover {
+        background: #e65c00;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Create an Event Invite</h1>
+      <form id="eventForm">
+        <div class="form-group">
+          <label for="eventName">Event Name:</label>
+          <input type="text" id="eventName" name="eventName" required />
+        </div>
+        <div class="form-group">
+          <label for="eventDate">Event Date:</label>
+          <input type="date" id="eventDate" name="eventDate" required />
+        </div>
+        <div class="form-group">
+          <label for="startTime">Start Time:</label>
+          <input type="time" id="startTime" name="startTime" required />
+        </div>
+        <div class="form-group">
+          <label for="endTime">End Time:</label>
+          <input type="time" id="endTime" name="endTime" required />
+        </div>
+        <div class="form-group">
+          <label for="eventDescription">Event Description:</label>
+          <textarea
+            id="eventDescription"
+            name="eventDescription"
+            required
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label for="location">Location:</label>
+          <input type="text" id="location" name="location" required />
+        </div>
+        <button type="submit">Create Invitation</button>
+      </form>
+    </div>
+    <script>
+      document
+        .getElementById("eventForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          const eventName = document.getElementById("eventName").value;
+          const eventDate = document.getElementById("eventDate").value;
+          const startTime = document.getElementById("startTime").value;
+          const endTime = document.getElementById("endTime").value;
+          const eventDescription =
+            document.getElementById("eventDescription").value;
+          const location = document.getElementById("location").value;
+
+          const details = `
+          <div class="invite">
+            <h2>${eventName}</h2>
+          <p><strong>Date:</strong> ${eventDate}</p>
+          <p><strong>Time:</strong> ${startTime} - ${endTime}</p>
+          <p><strong>Location:</strong> ${location}</p>
+          <p><strong>Description:</strong> ${eventDescription}</p>
+          </div>
+        `;
+
+          document.querySelector(".container").innerHTML = details;
+        });
+    </script>
+  </body>
+</html>

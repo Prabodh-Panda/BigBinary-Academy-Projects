@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Battleship Game</title>
+    <style>
+      body {
+        background: tomato;
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+
+      h1 {
+        color: white;
+        text-decoration: underline lightcoral;
+      }
+
+      .rules {
+        color: white;
+      }
+
+      .game-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 100px);
+        grid-template-rows: repeat(4, 100px);
+        border: 2px solid snow;
+      }
+
+      .cell {
+        width: 100px;
+        height: 100px;
+        background: #007bff;
+        border-right: 2px solid snow;
+        border-bottom: 2px solid snow;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s ease;
+        box-sizing: border-box;
+      }
+
+      .cell:nth-child(4n) {
+        border-right: none;
+      }
+      .cell:nth-child(n + 13) {
+        border-bottom: none;
+      }
+      .cell:hover {
+        background: #0069d9;
+      }
+
+      .cell img {
+        width: 100%;
+        height: 100%;
+        display: none;
+        object-fit: cover;
+      }
+      .cell.revealed img {
+        display: block;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 18px;
+        background: #fff;
+        color: black;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        box-shadow: 6px 8px 0 #ff767b;
+        transition: 0.3s ease;
+        margin-top: 20px;
+      }
+
+      button:hover {
+        background: #ff767b;
+        box-shadow: 6px 8px 0 #fff;
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Battleship</h1>
+    <div class="rules">
+      <p><strong>Game Rules</strong></p>
+      <ul>
+        <li>Click on the cells to reveal the image hidden behind them.</li>
+        <li>There are 5 ships hidden in the game.</li>
+        <li>
+          You win if you can find all the ships in less than 8 clicks else you
+          lose.
+        </li>
+      </ul>
+    </div>
+    <div class="game-container">
+      <div class="grid" id="grid"></div>
+      <button id="reset">Reset</button>
+    </div>
+    <script>
+      const seaImageUrl =
+        "https://ik.imagekit.io/d9mvewbju/Course/BigbinaryAcademy/seamless-pattern-waves-various-shades-blue-vector-underwater-design-96891651_aSd5pmbaM.webp";
+      const shipImageUrl =
+        "https://ik.imagekit.io/d9mvewbju/Course/BigbinaryAcademy/battleship-image_e6bWCZ1w4.png";
+
+      let shipPositions = [],
+        clickCount = 0,
+        shipsFound = 0,
+        gameOver = false;
+
+      function initGame() {
+        const grid = document.getElementById("grid");
+        grid.innerHTML = "";
+        shipPositions = [];
+        clickCount = shipsFound = 0;
+        gameOver = false;
+
+        while (shipPositions.length < 5) {
+          let pos = Math.floor(Math.random() * 16);
+          if (!shipPositions.includes(pos)) shipPositions.push(pos);
+        }
+
+        for (let i = 0; i < 16; i++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          cell.dataset.index = i;
+
+          const img = document.createElement("img");
+          img.src = shipPositions.includes(i) ? shipImageUrl : seaImageUrl;
+          cell.appendChild(img);
+
+          cell.addEventListener("click", handleCellClick);
+          grid.appendChild(cell);
+        }
+      }
+
+      function handleCellClick(e) {
+        if (gameOver || e.currentTarget.classList.contains("revealed")) return;
+
+        clickCount++;
+        const cell = e.currentTarget;
+        cell.classList.add("revealed");
+
+        if (shipPositions.includes(+cell.dataset.index)) shipsFound++;
+
+        if (shipsFound === 5) {
+          gameOver = true;
+          setTimeout(() => alert("You Won!"), 300);
+        } else if (clickCount >= 8) {
+          gameOver = true;
+          setTimeout(() => {
+            alert("You Lost!");
+            document
+              .querySelectorAll(".cell:not(.revealed)")
+              .forEach((cell) => {
+                if (shipPositions.includes(+cell.dataset.index))
+                  cell.classList.add("revealed");
+              });
+          }, 300);
+        }
+      }
+
+      document.getElementById("reset").addEventListener("click", initGame);
+      window.addEventListener("load", initGame);
+    </script>
+  </body>
+</html>
