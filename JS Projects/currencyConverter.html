@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Currency Converter</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <style>
+      body {
+        font-family: "Lato", sans-serif;
+        background-color: #fff3a5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .converter {
+        background-color: #f8d800;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+      }
+
+      input,
+      button {
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 1rem;
+      }
+
+      .choices,
+      button {
+        width: 100%;
+      }
+
+      .choices__inner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .inputs {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .currencies {
+        display: flex;
+        gap: 1rem;
+      }
+
+      input:focus {
+        border-color: #555;
+      }
+
+      button {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .result {
+        font-weight: bold;
+        margin-top: 15px;
+      }
+
+      .error {
+        color: red;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="converter">
+      <h2>Currency Converter</h2>
+      <p>Enter Amount</p>
+      <div class="inputs">
+        <input type="number" id="amount" placeholder="100" required />
+        <div class="currencies">
+          <select class="select" id="fromCurrency"></select>
+          <p>TO</p>
+          <select class="select" id="toCurrency"></select>
+        </div>
+      </div>
+      <button onclick="convertCurrency()">Convert</button>
+      <p class="result" id="result"></p>
+      <p class="error" id="error"></p>
+    </div>
+
+    <script>
+      const result = document.getElementById("result");
+      const error = document.getElementById("error");
+      const fromSelect = document.getElementById("fromCurrency");
+      const toSelect = document.getElementById("toCurrency");
+
+      const fromChoices = new Choices(fromSelect, {
+        searchEnabled: true,
+        itemSelectText: "",
+        shouldSort: false,
+        callbackOnCreateTemplates: function (template) {
+          return {
+            item: (classNames, data) => {
+              return template(`
+          <div class="${classNames.item} ${
+                data.highlighted
+                  ? classNames.highlightedState
+                  : classNames.itemSelectable
+              }" data-item data-id="${data.id}" data-value="${data.value}" ${
+                data.active ? 'aria-selected="true"' : ""
+              } ${data.disabled ? 'aria-disabled="true"' : ""}>
+            <img src="${
+              data.customProperties.flag
+            }" style="width:20px; height:14px; margin-right:6px;"> ${data.label}
+          </div>
+        `);
+            },
+            choice: (classNames, data) => {
+              return template(`
+          <div class="${classNames.item} ${
+                classNames.itemChoice
+              }" data-select-text="" data-choice data-id="${
+                data.id
+              }" data-value="${data.value}" ${
+                data.disabled
+                  ? 'data-choice-disabled aria-disabled="true"'
+                  : "data-choice-selectable"
+              }>
+            <img src="${
+              data.customProperties.flag
+            }" style="width:20px; height:14px; margin-right:6px;"> ${data.label}
+          </div>
+        `);
+            },
+          };
+        },
+      });
+
+      const toChoices = new Choices(toSelect, {
+        searchEnabled: true,
+        itemSelectText: "",
+        shouldSort: false,
+        callbackOnCreateTemplates: fromChoices.config.callbackOnCreateTemplates,
+      });
+
+      fetch("https://restcountries.com/v3.1/all")
+        .then((response) => response.json())
+        .then((data) => {
+          const currencies = [];
+          data.forEach((country) => {
+            if (country.currencies) {
+              for (let code in country.currencies) {
+                const name = country.currencies[code].name;
+                const flag = country.flags.png;
+                currencies.push({
+                  value: code,
+                  label: `${code} - ${name}`,
+                  flag: flag,
+                });
+              }
+            }
+          });
+
+          const seen = new Set();
+          const uniqueCurrencies = currencies.filter((item) => {
+            if (seen.has(item.value)) return false;
+            seen.add(item.value);
+            return true;
+          });
+
+          const choicesList = uniqueCurrencies
+            .sort((a, b) => a.value.localeCompare(b.value))
+            .map((curr) => ({
+              value: curr.value,
+              label: curr.label,
+              customProperties: { flag: curr.flag },
+            }));
+
+          fromChoices.setChoices(choicesList, "value", "label", false);
+          toChoices.setChoices(choicesList, "value", "label", false);
+        });
+
+      function convertCurrency() {
+        const amount = document.getElementById("amount").value;
+        const from = fromCurrency.value;
+        const to = toCurrency.value;
+        error.textContent = "";
+        result.textContent = "";
+
+        if (!amount || amount <= 0) {
+          error.textContent = "Please enter a valid amount.";
+          return;
+        }
+
+        const apiKey = "272960fc244cf66324acf6f7";
+        const url = `https://v6.exchangerate-api.com/v6/${apiKey}/pair/${from}/${to}`;
+
+        fetch(url)
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.result === "success") {
+              const converted = (data.conversion_rate * amount).toFixed(2);
+              result.textContent = `${amount} ${from} = ${converted} ${to}`;
+            } else {
+              throw new Error("Failed to fetch exchange rate.");
+            }
+          })
+          .catch((err) => {
+            error.textContent = err.message;
+          });
+      }
+    </script>
+  </body>
+</html>

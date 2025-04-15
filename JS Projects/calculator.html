@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculator</title>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #b0e0e6;
+      }
+
+      .calculator {
+        background-color: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .display {
+        width: 100%;
+        height: 50px;
+        font-size: 24px;
+        text-align: right;
+        border: none;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+      }
+
+      .buttons {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+      }
+
+      button {
+        height: 60px;
+        font-size: 24px;
+        border: none;
+        border-radius: 5px;
+        background-color: #f8f8f8;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #e0e0e0;
+      }
+
+      button:active {
+        background-color: #d0d0d0;
+      }
+
+      button.action {
+        background-color: #ff6b6b;
+        color: white;
+      }
+
+      button.action:hover {
+        background-color: #ff4c4c;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="calculator">
+      <input type="text" class="display" id="display" disabled value="0" />
+      <div class="buttons">
+        <button onclick="appendToDisplay('1')">1</button>
+        <button onclick="appendToDisplay('2')">2</button>
+        <button onclick="appendToDisplay('3')">3</button>
+        <button class="action" onclick="clearDisplay()">C</button>
+        <button class="action" onclick="appendToDisplay('%')">%</button>
+
+        <button onclick="appendToDisplay('4')">4</button>
+        <button onclick="appendToDisplay('5')">5</button>
+        <button onclick="appendToDisplay('6')">6</button>
+        <button class="action" onclick="appendToDisplay('+')">+</button>
+        <button class="action" onclick="appendToDisplay('-')">-</button>
+
+        <button onclick="appendToDisplay('7')">7</button>
+        <button onclick="appendToDisplay('8')">8</button>
+        <button onclick="appendToDisplay('9')">9</button>
+        <button class="action" onclick="appendToDisplay('÷')">÷</button>
+        <button class="action" onclick="deleteLast()">Del</button>
+
+        <button onclick="appendToDisplay('.')">.</button>
+        <button onclick="appendToDisplay('0')">0</button>
+        <button onclick="calculateResult()">=</button>
+        <button class="action" onclick="appendToDisplay('×')">×</button>
+        <button class="action" onclick="appendToDisplay('^')">Exp</button>
+      </div>
+    </div>
+
+    <script>
+      let accumulator = 0;
+      let currentOperand = 0;
+      let currentOperator = "";
+      let display = document.getElementById("display");
+
+      const appendToDisplay = (value) => {
+        if (display.value === "0" || display.value === "Error") {
+          display.value = value;
+        } else {
+          display.value += value;
+        }
+        currentOperand = parseFloat(display.value);
+      };
+
+      const clearDisplay = () => {
+        accumulator = 0;
+        currentOperand = 0;
+        display.value = "0";
+      };
+
+      const deleteLast = () => {
+        if (display.value.length === 1) {
+          display.value = "0";
+        } else {
+          display.value = display.value.slice(0, -1);
+        }
+        currentOperand = parseFloat(display.value);
+      };
+
+      const calculateResult = () => {
+        try {
+          display.value = eval(
+            display.value.replace("÷", "/").replace("×", "*").replace("^", "**")
+          );
+        } catch {
+          display.value = "Error";
+        }
+      };
+
+      const exponent = () => {
+        display.value = Math.exp(Number(display.value)).toString();
+      };
+    </script>
+  </body>
+</html>

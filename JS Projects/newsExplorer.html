@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>News Explorer</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      header {
+        width: 90%;
+        margin: 1rem auto;
+      }
+
+      #searchInput {
+        padding: 0.5rem;
+        border: 1px solid #e6e8ec;
+        border-radius: 5px;
+        width: 100%;
+        outline: none;
+      }
+
+      main {
+        width: 90%;
+        margin: 1rem auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #tags {
+        list-style-type: none;
+        display: flex;
+        padding: 0;
+        gap: 0.5rem;
+      }
+
+      #tags li {
+        padding: 0.3rem 1rem;
+        background-color: #e6e8ec;
+        border-radius: 5px;
+        min-width: 60px;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      #tags li.active,
+      #tags li:hover {
+        background-color: #505050;
+        color: white;
+      }
+
+      #articles {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+
+      .article:first-child {
+        grid-column: 1 / 3;
+      }
+
+      .article {
+        background-color: #f0f0f1;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+      }
+
+      .article .title {
+        margin-bottom: 0;
+      }
+
+      .article .date {
+        margin: 0.5rem 0;
+      }
+
+      button {
+        background-color: black;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        margin: 1rem auto;
+      }
+
+      button:hover {
+        color: #7e7e7e;
+      }
+
+      .highlight {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <input type="text" id="searchInput" placeholder="Search for News" />
+    </header>
+    <main>
+      <div>
+        <h1>Top stories for you</h1>
+        <ul id="tags">
+          <li class="active">All</li>
+          <li>Business</li>
+          <li>Politics</li>
+          <li>Sport</li>
+          <li>Entertainment</li>
+        </ul>
+      </div>
+
+      <div id="articles"></div>
+      <button id="showMore">Show More</button>
+    </main>
+
+    <script src="newsData.js"></script>
+    <script>
+      const tags = document.querySelectorAll("#tags li");
+      const articlesContainer = document.getElementById("articles");
+      const showAllButton = document.getElementById("showMore");
+      const searchInput = document.getElementById("searchInput");
+
+      let selectedTags = new Set(["all"]);
+      let news = data.sort(
+        (a, b) => new Date(b.dateAndTime) - new Date(a.dateAndTime)
+      );
+      let showAll = false;
+      let searchQuery = "";
+
+      const debounce = (fn, delay) => {
+        let timer;
+        return (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn.apply(this, args), delay);
+        };
+      };
+
+      const highlightText = (text, query) => {
+        if (!query) return text;
+        const regex = new RegExp(`(${query})`, "gi");
+        return text.replace(regex, `<span class="highlight">$1</span>`);
+      };
+
+      const showNews = () => {
+        const end = showAll ? data.length : 7;
+
+        const filteredData = news
+          .filter((item) => {
+            const matchesTag =
+              selectedTags.has("all") ||
+              selectedTags.has(item.category.toLowerCase());
+            const matchesSearch =
+              item.title.toLowerCase().includes(searchQuery) ||
+              item.content.toLowerCase().includes(searchQuery);
+            return matchesTag && (!searchQuery || matchesSearch);
+          })
+          .slice(0, end);
+
+        const articles = filteredData.map((item) => {
+          const highlightedTitle = highlightText(item.title, searchQuery);
+          const highlightedContent = highlightText(item.content, searchQuery);
+          return `
+            <div class="article">
+                <h2 class="title">${highlightedTitle}</h2>
+                <p class="date">${item.dateAndTime}</p>
+                <p class="content">${highlightedContent}</p>
+            </div>
+            `;
+        });
+
+        articlesContainer.innerHTML = articles.join("");
+      };
+
+      const handleTagChange = (event) => {
+        const clickedTag = event.target.innerText.toLowerCase();
+
+        if (clickedTag === "all") {
+          selectedTags.clear();
+          selectedTags.add("all");
+        } else {
+          if (selectedTags.has("all")) {
+            selectedTags.delete("all");
+          }
+
+          if (selectedTags.has(clickedTag)) {
+            selectedTags.delete(clickedTag);
+          } else {
+            selectedTags.add(clickedTag);
+          }
+          if (selectedTags.size === 0) {
+            selectedTags.add("all");
+          }
+        }
+
+        tags.forEach((tag) => {
+          const tagName = tag.innerText.toLowerCase();
+          if (selectedTags.has(tagName)) {
+            tag.classList.add("active");
+          } else {
+            tag.classList.remove("active");
+          }
+        });
+
+        showNews();
+      };
+
+      const handleShowAllChange = () => {
+        showAll = !showAll;
+        showAllButton.innerText = showAll ? "Show Less" : "Show More";
+        showNews();
+      };
+
+      const handleSearch = debounce((event) => {
+        searchQuery = event.target.value.trim().toLowerCase();
+        showNews();
+      }, 300);
+
+      tags.forEach((tag) => tag.addEventListener("click", handleTagChange));
+      showAllButton.addEventListener("click", handleShowAllChange);
+      searchInput.addEventListener("input", handleSearch);
+
+      showNews();
+    </script>
+  </body>
+</html>
