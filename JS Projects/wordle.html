@@ -42,6 +42,7 @@
         display: flex;
         justify-content: center;
         margin-bottom: 5px;
+        gap: 0.25rem;
       }
 
       .cell {
@@ -117,7 +118,7 @@
           maxlength="5"
           placeholder="Enter 5 letter word"
         />
-        <button id="submit-btn">Submit</button>
+        <button id="submit-btn">Submit Guess</button>
       </div>
       <div class="message" id="message"></div>
       <button id="new-game-btn" style="margin-top: 20px">New Game</button>
@@ -199,10 +200,10 @@
             });
 
           if (guess === targetWord) {
-            message.textContent = "Congratulations!";
+            message.textContent = "Congratulations! You guessed the word!";
             gameOver = true;
           } else if (++currentRow === MAX_TRIES) {
-            message.textContent = `Game over! Word: ${targetWord}`;
+            message.textContent = `Game over! The word was "${targetWord}"`;
             gameOver = true;
           }
           guessInput.value = "";

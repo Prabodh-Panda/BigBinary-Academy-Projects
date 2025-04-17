@@ -23,6 +23,7 @@
         width: 90%;
         max-width: 600px;
         padding: 25px;
+        border: 2px solid #e65c00;
       }
 
       h1 {
@@ -35,6 +36,8 @@
 
       .form-group {
         margin-bottom: 15px;
+        display: flex;
+        flex-direction: column;
       }
 
       label {
@@ -45,7 +48,6 @@
 
       input,
       textarea {
-        width: 100%;
         padding: 10px;
         border: 1px solid #20639b;
         border-radius: 5px;
@@ -79,6 +81,28 @@
 
       button:hover {
         background: #e65c00;
+      }
+
+      .invited {
+        color: #e65c00;
+      }
+
+      .invite .heading {
+        text-align: center;
+      }
+
+      .invite .heading h1,
+      .invite .heading h2 {
+        margin: 0;
+      }
+
+      .invite .heading p {
+        margin: 0.5rem 0;
+      }
+
+      .invite .date {
+        color: #e65c00;
+        font-weight: bold;
       }
     </style>
   </head>
@@ -118,6 +142,19 @@
       </form>
     </div>
     <script>
+      const convertTo12Hour = (time24) => {
+        if (!time24) return "";
+
+        const [hourStr, minuteStr] = time24.split(":");
+        let hour = parseInt(hourStr, 10);
+        const minute = minuteStr;
+
+        const ampm = hour >= 12 ? "PM" : "AM";
+        hour = hour % 12 || 12;
+
+        return `${hour}:${minute} ${ampm}`;
+      };
+
       document
         .getElementById("eventForm")
         .addEventListener("submit", function (event) {
@@ -131,13 +168,24 @@
             document.getElementById("eventDescription").value;
           const location = document.getElementById("location").value;
 
+          const dateString = new Date(eventDate).toLocaleDateString("en-IN", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+
           const details = `
           <div class="invite">
-            <h2>${eventName}</h2>
-          <p><strong>Date:</strong> ${eventDate}</p>
-          <p><strong>Time:</strong> ${startTime} - ${endTime}</p>
-          <p><strong>Location:</strong> ${location}</p>
-          <p><strong>Description:</strong> ${eventDescription}</p>
+            <div class="heading">
+              <h1 class="invited">YOU ARE INVITED</h1>
+              <p>TO JOIN THE</p>
+              <h2>${eventName}</h2>
+            </div>
+            <p class="date">${dateString}</p>
+            <p>${convertTo12Hour(startTime)} - ${convertTo12Hour(endTime)}</p>
+            <p>${location}</p>
+            <p>${eventDescription}</p>
           </div>
         `;
 

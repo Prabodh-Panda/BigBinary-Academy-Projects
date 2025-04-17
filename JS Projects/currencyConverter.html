@@ -114,6 +114,7 @@
         searchEnabled: true,
         itemSelectText: "",
         shouldSort: false,
+        searchResultLimit: -1,
         callbackOnCreateTemplates: function (template) {
           return {
             item: (classNames, data) => {
@@ -125,9 +126,7 @@
               }" data-item data-id="${data.id}" data-value="${data.value}" ${
                 data.active ? 'aria-selected="true"' : ""
               } ${data.disabled ? 'aria-disabled="true"' : ""}>
-            <img src="${
-              data.customProperties.flag
-            }" style="width:20px; height:14px; margin-right:6px;"> ${data.label}
+             ${data.label}
           </div>
         `);
             },
@@ -142,9 +141,7 @@
                   ? 'data-choice-disabled aria-disabled="true"'
                   : "data-choice-selectable"
               }>
-            <img src="${
-              data.customProperties.flag
-            }" style="width:20px; height:14px; margin-right:6px;"> ${data.label}
+            ${data.label}
           </div>
         `);
             },
@@ -156,10 +153,11 @@
         searchEnabled: true,
         itemSelectText: "",
         shouldSort: false,
+        searchResultLimit: -1,
         callbackOnCreateTemplates: fromChoices.config.callbackOnCreateTemplates,
       });
 
-      fetch("https://restcountries.com/v3.1/all")
+      fetch("https://restcountries.com/v3.1/all?fields=name,currencies,flag")
         .then((response) => response.json())
         .then((data) => {
           const currencies = [];
@@ -167,24 +165,16 @@
             if (country.currencies) {
               for (let code in country.currencies) {
                 const name = country.currencies[code].name;
-                const flag = country.flags.png;
+                const flag = country.flag;
                 currencies.push({
                   value: code,
-                  label: `${code} - ${name}`,
-                  flag: flag,
+                  label: `${flag} ${code} - ${name}`,
                 });
               }
             }
           });
 
-          const seen = new Set();
-          const uniqueCurrencies = currencies.filter((item) => {
-            if (seen.has(item.value)) return false;
-            seen.add(item.value);
-            return true;
-          });
-
-          const choicesList = uniqueCurrencies
+          const choicesList = currencies
             .sort((a, b) => a.value.localeCompare(b.value))
             .map((curr) => ({
               value: curr.value,
